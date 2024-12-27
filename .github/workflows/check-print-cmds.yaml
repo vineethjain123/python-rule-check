@@ -1,6 +1,6 @@
 name: Check for Disallowed Commands
 
-on: [push]
+on: [pull_request]
 
 jobs:
   check-commands:
@@ -9,13 +9,34 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      - name: Get list of modified files
+        id: files
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const files = await github.paginate(
+              github.rest.pulls.listFiles, 
+              {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: context.payload.pull_request.number
+              }
+            );
+            return files.map(file => file.filename).join(" ");
+
       - name: Check for disallowed commands
         run: |
           # Find uncommented lines containing the disallowed commands
           disallowed_commands="display|show|head|tail|describe|print"
-          if grep -E -i -n "^\s*[^#]*\b($disallowed_commands)\b" notebooks/*.py; then
-            echo "Error: Found disallowed commands in the code."
-            exit 1
+          files="${{ steps.files.outputs.result }}"
+          if [ -n "$files" ]; then
+            matches=$(grep -E -i -n "^\s*[^#]*\b($disallowed_commands)\b" $files || true)
+            if [ -n "$matches" ]; then
+              echo "Error: Found disallowed commands in the code:"
+              echo "$matches"
+              exit 1
+            else
+              echo "No disallowed commands found."
+            fi
           else
-            echo "No disallowed commands found."
-          fi
+            echo "No Python files modified."
