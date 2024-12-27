@@ -47,7 +47,7 @@ df_T001W2=df_T001W2.withColumnRenamed("PLANT_CODE","PLANT_CODE1")
 final_df = final_df.join(df_T001W2, final_df.O8_SUPPLIER_CODE == df_T001W2.PLANT_CODE1,how='left').drop(df_T001W2.PLANT_CODE1)
 print(final_df.count())
 final_df=final_df.withColumnRenamed("SALES_ORG_CODE","SALES_ORG_CODE_SUPPLIER")
-#display(final_df)
+display(final_df)
 
 # COMMAND ----------
 
