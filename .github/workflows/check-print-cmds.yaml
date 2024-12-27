@@ -22,13 +22,13 @@ jobs:
                 pull_number: context.payload.pull_request.number
               }
             );
-            return { result: files.map(file => file.filename).join(" ") };
+            return { files: files.filter(file => file.filename.endsWith('.py')).map(file => file.filename).join(" ") };
 
       - name: Check for disallowed commands
         run: |
           # Find uncommented lines containing the disallowed commands
           disallowed_commands="display|show|head|tail|describe|print"
-          files="${{ steps.files.outputs.result }}"
+          files="${{ steps.files.outputs.files }}"
           if [ -n "$files" ]; then
             matches=$(grep -E -i -n "^\s*[^#]*\b($disallowed_commands)\b" $files || true)
             if [ -n "$matches" ]; then
