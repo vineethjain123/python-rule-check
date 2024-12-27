@@ -39,4 +39,4 @@ jobs:
               echo "No disallowed commands found."
             fi
           else
-            echo "No Python files modified."
+              echo "No Python files modified."
