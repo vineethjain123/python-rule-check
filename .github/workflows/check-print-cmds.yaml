@@ -22,21 +22,19 @@ jobs:
                 pull_number: context.payload.pull_request.number
               }
             );
-            return { files: files.filter(file => file.filename.endsWith('.py')).map(file => file.filename).join(" ") };
+            const pythonFiles = files.filter(file => file.filename.endsWith('.py')).map(file => file.filename).join(" ");
+            return { pythonFiles };
 
       - name: Check for disallowed commands
+        if: ${{ steps.files.outputs.pythonFiles != '' }}
         run: |
           # Find uncommented lines containing the disallowed commands
           disallowed_commands="display|show|head|tail|describe|print"
-          files="${{ steps.files.outputs.files }}"
-          if [ -n "$files" ]; then
-            matches=$(grep -E -i -n "^\s*[^#]*\b($disallowed_commands)\b" $files || true)
-            if [ -n "$matches" ]; then
-              echo "Error: Found disallowed commands in the code:"
-              echo "$matches"
-              exit 1
-            else
-              echo "No disallowed commands found."
-            fi
+          files="${{ steps.files.outputs.pythonFiles }}"
+          matches=$(grep -E -i -n "^\s*[^#]*\b($disallowed_commands)\b" $files || true)
+          if [ -n "$matches" ]; then
+            echo "Error: Found disallowed commands in the code:"
+            echo "$matches"
+            exit 1
           else
-              echo "No Python files modified."
+            echo "No disallowed commands found."
