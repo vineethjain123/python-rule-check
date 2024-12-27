@@ -1,0 +1,21 @@
+name: Check for Disallowed Commands
+
+on: [push]
+
+jobs:
+  check-commands:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Check for disallowed commands
+        run: |
+          # Find uncommented lines containing the disallowed commands
+          disallowed_commands="display|show|head|tail|describe|print"
+          if grep -E -i -n "^\s*[^#]*\b($disallowed_commands)\b" notebooks/*.py; then
+            echo "Error: Found disallowed commands in the code."
+            exit 1
+          else
+            echo "No disallowed commands found."
+          fi
