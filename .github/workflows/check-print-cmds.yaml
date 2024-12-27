@@ -22,7 +22,7 @@ jobs:
                 pull_number: context.payload.pull_request.number
               }
             );
-            return files.map(file => file.filename).join(" ");
+            return { result: files.map(file => file.filename).join(" ") };
 
       - name: Check for disallowed commands
         run: |
